@@ -160,7 +160,7 @@ lines(F2,lty=T2,col=C2,verticals=TRUE)
 
 ######
 
-if)FALSE){
+if(FALSE){
 
 
  ##3-dimensionale Analyse 
