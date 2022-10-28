@@ -1,3 +1,5 @@
+library(spatstat)
+
 dat <- foreign::read.spss("Datensaetze/Allbus_2014/ZA5240_v2-1-0.sav",to.data.frame=TRUE)       ## Daten einlesen
                                                             #Vorher: Pfad entsprechend setzen
 
