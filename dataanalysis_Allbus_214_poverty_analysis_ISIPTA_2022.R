@@ -1,57 +1,7 @@
-load("Sicherung_beipiel_mult_Ungleicheit.RData")    # Lade Workspace, wo Ergebnisse aller Berechnungen schon vorhanden sind
-
-
-
-library(foreign)                ## Lade nötige Libraries
-library(spatstat)               ## benötigt zur Berchnung empirischer Verteilungsfunktionen mit Gewichten (Funktion ewcdf)
-library(lpSolve)                ## sowohl lpSolve als auch lpSolveAPI greifen auf lpp_solve zurück
-library(lpSolveAPI)              ## (http://lpsolve.sourceforge.net/5.5/)  wobei lpSOlveAPI den zugrif auf mehr Einstellunge                                  ## n erlaubt
-                                ## nur eines der Packages muss geladen sein
- 
-library(plyr)                  ## Wird zur gewichteten Darstellung von Datentabellen benötigt
-
-library(Matrix)
-
-library(igraph)          ## benoetigt für Berchnung maximales bipartites Matching für Berechnung der Wiete einer geordneten Menge (nur am Schluss benoetigt)
-
-dyn.load("main.dll")
-source("main_konsolidiert.r")
-
-gurobi=function(model,params){           ##           Anstelle des R packages Gurobi plus installierter Gurobi-Software ( www.gurobi.com ) kann 
-                                         ##   auch lpSolve mit Zusatzfunktion gurobi verwendet werden 
- ans=lp(direction = model$modelsense, objective.in=model$obj, const.mat=model$A, const.dir=model$sense, const.rhs=model$rhs,binary.vec=which(model$vtypes=="B")) 
-
-return(list(objval=ans$objval,x=ans$solution,rest=ans))}
-
-
-
-gurobi=function(model,params){       #Alternativ: anstelle von lpSolve kann auch lpSOlveAPI verwendet werden. Dies 
-                                     # hat den Vorteil, das man auch mit Sparse Matrizen arbeiten kann
- m=dim(model$A)[1]
- n=dim(model$A)[2]
- ans=make.lp(nrow=m,ncol=n)
- set.objfn(ans,model$obj)
-
- for(k in (1:m)){
-   ind=which(model$A[k,]!=0)
-   add.constraint(ans,xt=model$A[k,ind],type=model$sense[k],indices=ind,rhs=model$rhs[k])
- }
- 
- set.type(ans,which(model$vtypes=="B"),"binary")
- lp.control(ans,sense= paste(model$modelsense,"imize",sep=""))
- solve(ans)
- x=get.primal.solution(ans)
- N=length(x)
-return(list(objval=get.objective(ans),x=x[((N-n+1):N)],rest=ans))}
-
-
-
-
-
-dat=read.spss("ZA5240_v2-1-0.sav",to.data.frame=TRUE)       ## Daten einlesen
+dat <- read.spss("ZA5240_v2-1-0.sav",to.data.frame=TRUE)       ## Daten einlesen
                                                             #Vorher: Pfad entsprechend setzen
 
-dat=dat[which(dat$V5=="SPLIT B: F75B"),]## Wähle Split F075 B
+dat <- dat[which(dat$V5=="SPLIT B: F75B"),]## Wähle Split F075 B
 
 #   FRAGEBOGENSPLIT F075
 #   Ergänzender Kurzkommentar zur Variablenbeschreibung:
@@ -133,12 +83,12 @@ T2=2        ## Linientyp Frauen
 
 ####Income
 
-Z=cbind(dat$V81,dat$V419,dat$V870);Z=na.omit(Z)
-i=which(Z[,1]==1)
-j=which(Z[,1]==2)
-F1=ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
-F2=ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
-xx=Z[,2]
+Z <- cbind(dat$V81,dat$V419,dat$V870);Z=na.omit(Z)
+i <- which(Z[,1]==1)
+j <- which(Z[,1]==2)
+F1 <- ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
+F2 <- ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
+xx <- Z[,2]
 min(F1(xx)-F2(xx))
 max(F1(xx)-F2(xx))
 
@@ -150,11 +100,11 @@ lines(F2,lty=T2,col=C2,verticals=TRUE)
 
 #Bildung
 
-Z=cbind(dat$V81,dat$V102,dat$V870);Z=na.omit(Z)
-i=which(Z[,1]==1)
-j=which(Z[,1]==2)
-F1=ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
-F2=ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
+Z <-cbind(dat$V81,dat$V102,dat$V870);Z=na.omit(Z)
+i <-which(Z[,1]==1)
+j <- which(Z[,1]==2)
+F1 <- ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
+F2 <- ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
 xx=Z[,2]
 min(F1(xx)-F2(xx))
 max(F1(xx)-F2(xx))
@@ -166,12 +116,12 @@ lines(F2,lty=T2,col=C2,verticals=TRUE)
 
 #Gesundheit
 
-Z=cbind(dat$V81,7-as.numeric(dat$V226),dat$V870);Z=na.omit(Z)
-i=which(Z[,1]==1)
-j=which(Z[,1]==2)
-F1=ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
-F2=ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
-xx=Z[,2]
+Z <-cbind(dat$V81,7-as.numeric(dat$V226),dat$V870);Z=na.omit(Z)
+i <- which(Z[,1]==1)
+j <- which(Z[,1]==2)
+F1 <-ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
+F2 <-ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
+xx <-Z[,2]
 min(F1(xx)-F2(xx))
 max(F1(xx)-F2(xx))
 
@@ -188,12 +138,12 @@ lines(F2,lty=T2,col=C2,verticals=TRUE)
 
 #Beruf
 
-Z=cbind(dat$V81,as.numeric(dat$V107),dat$V870);Z=na.omit(Z)
-i=which(Z[,1]==1)
-j=which(Z[,1]==2)
-F1=ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
-F2=ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
-xx=Z[,2]
+Z <- cbind(dat$V81,as.numeric(dat$V107),dat$V870);Z=na.omit(Z)
+i <- which(Z[,1]==1)
+j <- which(Z[,1]==2)
+F1 <- ewcdf(Z[i,2],weights=Z[i,3]/sum(Z[i,3]))
+F2 <- ewcdf(Z[j,2],weights=Z[j,3]/sum(Z[j,3]))
+xx <- Z[,2]
 min(F1(xx)-F2(xx))
 max(F1(xx)-F2(xx))
 
@@ -208,7 +158,9 @@ lines(F2,lty=T2,col=C2,verticals=TRUE)
 
 
 
+######
 
+if)FALSE){
 
 
  ##3-dimensionale Analyse 
@@ -395,7 +347,9 @@ X.out[i.min,]       ## Wie sieht der ''Rand'# der Oberhalbmenge, wo bmin angenom
 
 
 #########  Skalierung der Weite (für später)   Dauert sehr lange!!
-
+##
+##  MR. Geröllhalde:  
+  
 if(FALSE){
 
 I10=width.scaling(XX$Xw,10) ## width=21
@@ -584,4 +538,4 @@ lines( ecdf(w),lty=k,col=k)
 
 }
 
-
+}
