@@ -1,4 +1,4 @@
-dat <- read.spss("ZA5240_v2-1-0.sav",to.data.frame=TRUE)       ## Daten einlesen
+dat <- foreign::read.spss("Datensaetze/Allbus_2014/ZA5240_v2-1-0.sav",to.data.frame=TRUE)       ## Daten einlesen
                                                             #Vorher: Pfad entsprechend setzen
 
 dat <- dat[which(dat$V5=="SPLIT B: F75B"),]## Wähle Split F075 B
